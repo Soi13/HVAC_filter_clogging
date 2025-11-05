@@ -1,0 +1,16 @@
+Command:   ./modpoll -m tcp -t 4:float -r 101 -c 2 192.168.1.134
+
+The result will be something like:
+----------------------------------
+-- Polling slave... (Ctrl-C to stop)
+[101]: 23.700001
+[103]: 40.099998
+-- Polling slave... (Ctrl-C to stop)
+[101]: 23.500000
+[103]: 48.000000
+-- Polling slave... (Ctrl-C to stop)
+[101]: 23.500000
+[103]: 48.000000
+-- Polling slave... (Ctrl-C to stop)
+[101]: 28.299999
+[103]: 47.099998
