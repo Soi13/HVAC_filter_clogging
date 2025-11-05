@@ -2,8 +2,8 @@
 #include <ModbusIP_ESP8266.h>
 #include <PubSubClient.h>
 
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "Soi13";
+const char* password = "";
 
 #define mqtt_server "192.168.1.64"
 #define mqtt_user "mqtt_user"
@@ -16,7 +16,7 @@ ModbusIP mb;
 
 //Register addresses
 const uint16_t REG_TEMPERATURE = 100;
-const uint16_t REG_HUMIDITY    = 101;
+const uint16_t REG_HUMIDITY    = 102;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -58,8 +58,8 @@ void setup() {
 
   // Initialize Modbus TCP server
   mb.server(); //Start Modbus TCP server on port 502 (default)
-  mb.addHreg(REG_TEMPERATURE, 0);
-  mb.addHreg(REG_HUMIDITY, 0);
+  mb.addHreg(REG_TEMPERATURE, 0, 2);
+  mb.addHreg(REG_HUMIDITY, 0, 2);
 }
 
 void loop() {
@@ -76,14 +76,21 @@ void loop() {
 
     float temperature = 22.5 + (rand() % 100) / 10.0;
     float humidity = 40.0 + (rand() % 100) / 10.0;
-    mb.Hreg(REG_TEMPERATURE, (uint16_t)(temperature * 10));
-    mb.Hreg(REG_HUMIDITY, (uint16_t)(humidity * 10));
+
+    //Store float -> two 16-bit registers
+    uint16_t *t = (uint16_t*)&temperature;
+    uint16_t *h = (uint16_t*)&humidity;
+
+    mb.Hreg(REG_TEMPERATURE, t[0]);
+    mb.Hreg(REG_TEMPERATURE + 1, t[1]);
+    mb.Hreg(REG_HUMIDITY, h[0]);
+    mb.Hreg(REG_HUMIDITY + 1, h[1]);
 
     Serial.printf("Updated: Temp = %.1f°C, Hum = %.1f%%\n", temperature, humidity);
 
-    client.publish(filter_pressure_diff, String(REG_TEMPERATURE).c_str()); //This is for now for test, later I'll replace value REG_TEMPERATURE with real value from pressure sensor
+    client.publish(filter_pressure_diff, String(temperature).c_str()); //This is for now for test, later I'll replace value REG_TEMPERATURE with real value from pressure sensor
     Serial.print("Published temperature: ");
-    Serial.println(String(REG_TEMPERATURE).c_str());
+    Serial.println(String(temperature).c_str());
   }
 
   // Process incoming requests from Modbus controller (Master)
